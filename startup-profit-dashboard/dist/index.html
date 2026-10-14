@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="以 50 Startups 資料集建立的多元線性迴歸互動分析儀表板。">
   <title>新創獲利預測實驗室</title>
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body>
   <header class="site-header">
@@ -119,14 +119,14 @@
       <div class="comparison-grid">
         <article class="panel comparison-chart-panel">
           <div class="panel-heading">
-            <div><h3>RMSE 模型比較</h3><p>數值越低代表測試集預測誤差越小。</p></div>
-            <span class="panel-tag mint">Lasso 最佳</span>
+            <div><h3 id="comparisonChartTitle">K=1 RMSE 模型比較</h3><p>數值越低代表測試集預測誤差越小。</p></div>
+            <span class="panel-tag mint" id="comparisonBestBadge">K=1 最佳模型</span>
           </div>
           <div class="comparison-bars" id="comparisonBars"></div>
         </article>
         <article class="panel ranking-panel">
           <div class="panel-heading">
-            <div><h3>模型排行榜</h3><p>依測試集 RMSE 由低至高排序。</p></div>
+            <div><h3 id="rankingTitle">K=1 模型排行榜</h3><p>依目前特徵數的測試集 RMSE 由低至高排序。</p></div>
           </div>
           <div class="table-wrap">
             <table>
@@ -179,7 +179,7 @@
         <article class="metric-card k-metric-card">
           <div class="metric-top"><span>F-statistic</span><span class="metric-badge good" id="kMetricPValue">p &lt; 0.0001</span></div>
           <strong id="kMetricFStat">97.6</strong>
-          <p>檢查整體迴歸模型顯著性</p>
+          <p>OLS 為正式檢定；正則化模型為參考值</p>
         </article>
       </div>
 
@@ -219,7 +219,7 @@
       </article>
 
       <figure class="export-figure">
-        <img src="linear_regression_feature_progression.png?v=4" alt="Lasso 線性迴歸特徵數、RMSE、R2 與選定特徵比較圖">
+        <img src="linear_regression_feature_progression.png?v=5" alt="Lasso 線性迴歸特徵數、RMSE、R2 與選定特徵比較圖">
         <figcaption><span>PNG 匯出預覽</span>使用專案實際資料產生，可直接用於報告或簡報。</figcaption>
       </figure>
     </section>
@@ -351,6 +351,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

@@ -30,6 +30,7 @@ const currency = new Intl.NumberFormat("zh-TW", {
 let modelComparison = null;
 let activeRegressionModel = null;
 let activeFeatureStage = null;
+let activeFeatureCount = null;
 
 function svgElement(name, attributes = {}, text = "") {
   const element = document.createElementNS("http://www.w3.org/2000/svg", name);
@@ -178,7 +179,10 @@ function renderFeatureProgression(activeModel) {
     };
   });
 
+  const requestedFeatureCount = activeFeatureCount ?? activeModel.best_feature_count;
   const defaultStage = progression.find(
+    item => item.feature_count === requestedFeatureCount
+  ) ?? progression.find(
     item => item.feature_count === activeModel.best_feature_count
   );
   applyFeatureStage(defaultStage);
@@ -186,6 +190,7 @@ function renderFeatureProgression(activeModel) {
 
 function applyFeatureStage(stage) {
   activeFeatureStage = stage;
+  activeFeatureCount = stage.feature_count;
   const isOptimal = stage.feature_count === activeRegressionModel.best_feature_count;
   document.querySelectorAll("[data-feature-count]").forEach(button => {
     const isSelected = Number(button.dataset.featureCount) === stage.feature_count;
@@ -210,6 +215,12 @@ function applyFeatureStage(stage) {
   document.querySelector("#kSelectionInsight").textContent = isOptimal
     ? `★ ${activeRegressionModel.short_name} 在 K=${stage.feature_count} 達到最低測試 RMSE（${currency.format(stage.rmse)}）。`
     : `目前 K=${stage.feature_count}；最佳為 K=${activeRegressionModel.best_feature_count}。`;
+
+  document.querySelector("#metricR2").textContent = stage.r2.toFixed(4);
+  document.querySelector("#metricR2Note").textContent = `K=${stage.feature_count} 可解釋約 ${(stage.r2 * 100).toFixed(2)}% 的獲利變異`;
+  document.querySelector("#metricR2Bar").style.width = `${Math.max(0, stage.r2 * 100)}%`;
+  document.querySelector("#metricMAE").textContent = currency.format(stage.mae);
+  document.querySelector("#metricRMSE").textContent = currency.format(stage.rmse);
 
   drawFeatureLineChart(
     "#featureRmseChart",
@@ -251,6 +262,7 @@ function applyFeatureStage(stage) {
   document.querySelector("#liveModelTitle").textContent = `${activeRegressionModel.name} K=${stage.feature_count} 即時預測`;
   document.querySelector("#diagnosticModelName").textContent = `${activeRegressionModel.name} K=${stage.feature_count}：`;
   document.querySelector("#coefficientModelTitle").textContent = `${activeRegressionModel.name} K=${stage.feature_count} 特徵係數`;
+  renderCrossModelComparison(stage.feature_count);
   drawScatterChart();
   drawResidualChart();
   renderCoefficients();
@@ -312,14 +324,7 @@ function applyActiveModel(activeModel) {
     button.classList.toggle("active", button.dataset.modelId === activeModel.id);
     button.setAttribute("aria-pressed", button.dataset.modelId === activeModel.id ? "true" : "false");
   });
-  document.querySelector("#selectedModelRank").textContent = `目前排名 #${activeModel.rank}`;
-  document.querySelector("#selectedModelDescription").textContent = activeModel.description;
-  document.querySelector("#metricR2").textContent = activeModel.r2.toFixed(4);
-  document.querySelector("#metricR2Note").textContent = `模型可解釋約 ${(activeModel.r2 * 100).toFixed(2)}% 的獲利變異`;
-  document.querySelector("#metricR2Bar").style.width = `${Math.max(0, activeModel.r2 * 100)}%`;
-  document.querySelector("#metricMAE").textContent = currency.format(activeModel.mae);
-  document.querySelector("#metricRMSE").textContent = currency.format(activeModel.rmse);
-  document.querySelector("#metricPrediction").textContent = currency.format(activeModel.new_company_prediction);
+  document.querySelector("#selectedModelDescription").textContent = `${activeModel.description} 切換演算法時會保留目前 K=${activeFeatureCount ?? activeModel.best_feature_count}。`;
   document.querySelectorAll("[data-model-id]").forEach(element => {
     const isSelected = element.dataset.modelId === activeModel.id;
     if (element.matches(".comparison-bar-row, tr")) element.classList.toggle("selected", isSelected);
@@ -328,38 +333,72 @@ function applyActiveModel(activeModel) {
   renderFeatureProgression(activeModel);
 }
 
+function stageFor(modelItem, featureCount) {
+  return modelItem.feature_progression.find(
+    stage => stage.feature_count === featureCount
+  );
+}
+
+function wireModelControls() {
+  document.querySelectorAll("[data-model-id]").forEach(control => {
+    control.onclick = event => {
+      event.stopPropagation();
+      const selected = modelComparison.models.find(
+        item => item.id === control.dataset.modelId
+      );
+      if (selected) applyActiveModel(selected);
+    };
+  });
+}
+
+function renderCrossModelComparison(featureCount) {
+  const rankedModels = modelComparison.models
+    .map(modelItem => ({
+      ...modelItem,
+      selectedStage: stageFor(modelItem, featureCount)
+    }))
+    .sort((first, second) => first.selectedStage.rmse - second.selectedStage.rmse)
+    .map((modelItem, index) => ({ ...modelItem, featureRank: index + 1 }));
+  const maxRmse = Math.max(...rankedModels.map(item => item.selectedStage.rmse));
+  const selectedModel = rankedModels.find(item => item.id === activeRegressionModel.id);
+
+  document.querySelector("#comparisonChartTitle").textContent = `K=${featureCount} RMSE 模型比較`;
+  document.querySelector("#rankingTitle").textContent = `K=${featureCount} 模型排行榜`;
+  document.querySelector("#comparisonBestBadge").textContent = `${rankedModels[0].short_name} 最佳`;
+  document.querySelector("#selectedModelRank").textContent = `K=${featureCount} 排名 #${selectedModel.featureRank}`;
+
+  document.querySelector("#comparisonBars").innerHTML = rankedModels.map(item => `
+    <button class="comparison-bar-row ${item.featureRank === 1 ? "best" : ""} ${item.id === activeRegressionModel.id ? "selected" : ""}" type="button" data-model-id="${item.id}">
+      <strong>${item.short_name}</strong>
+      <div class="bar-track"><span style="width:${(item.selectedStage.rmse / maxRmse) * 100}%"></span></div>
+      <output>${currency.format(item.selectedStage.rmse)}</output>
+    </button>
+  `).join("");
+
+  document.querySelector("#modelRankingRows").innerHTML = rankedModels.map(item => `
+    <tr class="${item.id === activeRegressionModel.id ? "selected" : ""}" data-model-id="${item.id}">
+      <td><span class="rank-number ${item.featureRank === 1 ? "best" : ""}">${item.featureRank}</span></td>
+      <td><button class="model-link-button" type="button" data-model-id="${item.id}">${item.short_name}</button></td>
+      <td>${currency.format(item.selectedStage.rmse)}</td>
+      <td>${item.selectedStage.r2.toFixed(4)}</td>
+    </tr>
+  `).join("");
+
+  document.querySelectorAll(".model-tab").forEach(button => {
+    const rankedModel = rankedModels.find(item => item.id === button.dataset.modelId);
+    button.querySelector("small").textContent = `K=${featureCount} 排名 #${rankedModel.featureRank}`;
+  });
+  wireModelControls();
+}
+
 function renderModelComparison() {
   const tabs = document.querySelector("#modelTabs");
   tabs.innerHTML = modelComparison.models.map(item => `
     <button class="model-tab" type="button" data-model-id="${item.id}" aria-pressed="false">
-      ${item.short_name}<small>排名 #${item.rank}</small>
+      ${item.short_name}<small>準備資料</small>
     </button>
   `).join("");
-  const maxRmse = Math.max(...modelComparison.models.map(item => item.rmse));
-  document.querySelector("#comparisonBars").innerHTML = modelComparison.models.map(item => `
-    <button class="comparison-bar-row ${item.rank === 1 ? "best" : ""}" type="button" data-model-id="${item.id}">
-      <strong>${item.short_name}</strong>
-      <div class="bar-track"><span style="width:${(item.rmse / maxRmse) * 100}%"></span></div>
-      <output>${currency.format(item.rmse)}</output>
-    </button>
-  `).join("");
-
-  document.querySelector("#modelRankingRows").innerHTML = modelComparison.models.map(item => `
-    <tr data-model-id="${item.id}">
-      <td><span class="rank-number ${item.rank === 1 ? "best" : ""}">${item.rank}</span></td>
-      <td><button class="model-link-button" type="button" data-model-id="${item.id}">${item.short_name}</button></td>
-      <td>${currency.format(item.rmse)}</td>
-      <td>${item.r2.toFixed(4)}</td>
-    </tr>
-  `).join("");
-
-  document.querySelectorAll("[data-model-id]").forEach(control => {
-    control.onclick = event => {
-      event.stopPropagation();
-      const selected = modelComparison.models.find(item => item.id === control.dataset.modelId);
-      if (selected) applyActiveModel(selected);
-    };
-  });
+  wireModelControls();
 
   const bestModel = modelComparison.models.find(item => item.id === modelComparison.best_model_id);
   applyActiveModel(bestModel);
@@ -388,6 +427,7 @@ function calculatePrediction() {
   document.querySelector("#adminOutput").value = currency.format(administration);
   document.querySelector("#marketingOutput").value = currency.format(marketing);
   document.querySelector("#predictedProfit").textContent = currency.format(prediction);
+  document.querySelector("#metricPrediction").textContent = currency.format(prediction);
   document.querySelector("#predictionSummary").textContent = `此估計採用 ${state} 的州別效果；研發支出貢獻 ${currency.format(model.coefficients.rd * rd)}。`;
 
   document.querySelectorAll('input[type="range"]').forEach(input => {
