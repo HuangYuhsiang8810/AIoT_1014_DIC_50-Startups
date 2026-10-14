@@ -7,6 +7,12 @@
 
 切換演算法或特徵數量後，評估指標、入選特徵、迴歸方程式、係數、預測結果、殘差分析與圖表都會同步更新；RMSE 與 R² 圖表也會動態高亮目前選取的 K 值。
 
+## 線上 Demo
+
+**GitHub Pages：<https://huangyuhsiang8810.github.io/AIoT_1014_DIC_50-Startups/>**
+
+每次推送 `startup-profit-dashboard/dist/` 到 `main` 分支後，GitHub Actions 會自動重新部署 Demo 網頁。若首次部署尚未開啟 Pages，請到 repository 的 **Settings → Pages → Build and deployment → Source** 選擇 **GitHub Actions**。
+
 ## 專案功能
 
 - 比較五種線性迴歸演算法的 MAE、RMSE 與 R²
@@ -70,6 +76,9 @@
 ├── linear_regression_feature_progression.png
 ├── requirements.txt
 ├── README.md
+├── .github/
+│   └── workflows/
+│       └── deploy-pages.yml
 ├── docs/
 │   └── CRISP-DM.md
 └── startup-profit-dashboard/
