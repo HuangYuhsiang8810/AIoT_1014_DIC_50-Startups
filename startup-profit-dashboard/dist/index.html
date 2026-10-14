@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="以 50 Startups 資料集建立的多元線性迴歸互動分析儀表板。">
+  <title>新創獲利預測實驗室</title>
+  <link rel="stylesheet" href="styles.css?v=3">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#top" aria-label="回到頁首">
+        <span class="brand-mark" aria-hidden="true">Σ</span>
+        <span>
+          <strong>新創獲利預測實驗室</strong>
+          <small>Multiple Linear Regression</small>
+        </span>
+      </a>
+      <nav class="top-nav" aria-label="主要導覽">
+        <a href="#overview">模型比較</a>
+        <a href="#diagnostics">模型診斷</a>
+        <a href="#predictor">即時預測</a>
+      </nav>
+      <a class="header-cta" href="50_Startups.csv" download>下載資料集 <span>↓</span></a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero shell" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span></span> AIoT × 機器學習實作</p>
+        <h1 id="hero-title">從營運投入，<br><em>預測新創公司的獲利。</em></h1>
+        <p class="hero-lead">使用研發、行政、行銷支出與公司所在地，比較五種線性迴歸模型。從正則化到穩健估計，一頁掌握模型效能與預測差異。</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#predictor">立即試算獲利 <span>↗</span></a>
+          <a class="button button-ghost" href="#method">查看建模流程</a>
+        </div>
+      </div>
+      <div class="hero-visual" aria-label="模型摘要">
+        <div class="hero-orbit orbit-one"></div>
+        <div class="hero-orbit orbit-two"></div>
+        <div class="floating-card floating-card-main">
+          <p>最佳模型解釋力</p>
+          <strong>92.16<span>%</span></strong>
+          <div class="mini-progress"><span style="width: 92.16%"></span></div>
+          <small>Lasso 測試集 R²</small>
+        </div>
+        <div class="floating-card floating-card-top">
+          <span class="status-dot"></span>
+          <div><strong>五模型已就緒</strong><small>同一測試集公平比較</small></div>
+        </div>
+        <div class="floating-card floating-card-bottom">
+          <span class="spark">↗</span>
+          <div><small>最佳模型預測</small><strong>$134,860</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stat-ribbon" aria-label="資料集摘要">
+      <div class="shell stat-ribbon-inner">
+        <div><strong>50</strong><span>家公司樣本</span></div>
+        <div><strong>5</strong><span>種迴歸模型</span></div>
+        <div><strong>4</strong><span>個原始特徵</span></div>
+        <div><strong>80 / 20</strong><span>訓練測試切分</span></div>
+      </div>
+    </section>
+
+    <section class="section shell" id="overview">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow"><span></span> Model overview</p>
+          <h2>五種迴歸模型比較</h2>
+        </div>
+        <p>五個模型使用相同的資料切分、One-Hot Encoding 與標準化流程，確保比較結果公平且可重現。</p>
+      </div>
+
+      <div class="config-bar">
+        <div class="config-title"><span>⚙</span><div><strong>目前模型設定</strong><small>固定配置，可重現結果</small></div></div>
+        <div class="config-pills">
+          <span><b>模型數</b> 5 種</span>
+          <span><b>類別處理</b> One-Hot</span>
+          <span><b>測試比例</b> 20%</span>
+          <span><b>未知類別</b> 忽略</span>
+          <span><b>隨機種子</b> 42</span>
+        </div>
+      </div>
+
+      <div class="model-tabs" id="modelTabs" aria-label="選擇迴歸模型"></div>
+      <div class="selected-model-note">
+        <span id="selectedModelRank">目前排名 #1</span>
+        <p id="selectedModelDescription">Lasso 加入 L1 正則化，可將較不重要的特徵係數壓縮為零。</p>
+      </div>
+
+      <div class="metrics-grid">
+        <article class="metric-card metric-featured">
+          <div class="metric-top"><span>決定係數 R²</span><span class="metric-badge good">表現良好</span></div>
+          <strong id="metricR2">0.9216</strong>
+          <p id="metricR2Note">模型可解釋約 92.16% 的獲利變異</p>
+          <div class="metric-line"><span id="metricR2Bar" style="width:92.16%"></span></div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-top"><span>平均絕對誤差</span><span class="metric-icon">±</span></div>
+          <strong id="metricMAE">$6,420</strong>
+          <p>平均每筆預測的絕對差距</p>
+        </article>
+        <article class="metric-card">
+          <div class="metric-top"><span>均方根誤差</span><span class="metric-icon">√</span></div>
+          <strong id="metricRMSE">$7,968</strong>
+          <p>對較大誤差給予更高權重</p>
+        </article>
+        <article class="metric-card">
+          <div class="metric-top"><span>新公司預測</span><span class="metric-icon">$</span></div>
+          <strong id="metricPrediction">$134,860</strong>
+          <p>相同投入條件下的模型估計</p>
+        </article>
+      </div>
+
+      <div class="comparison-grid">
+        <article class="panel comparison-chart-panel">
+          <div class="panel-heading">
+            <div><h3>RMSE 模型比較</h3><p>數值越低代表測試集預測誤差越小。</p></div>
+            <span class="panel-tag mint">Lasso 最佳</span>
+          </div>
+          <div class="comparison-bars" id="comparisonBars"></div>
+        </article>
+        <article class="panel ranking-panel">
+          <div class="panel-heading">
+            <div><h3>模型排行榜</h3><p>依測試集 RMSE 由低至高排序。</p></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>排名</th><th>模型</th><th>RMSE</th><th>R²</th></tr></thead>
+              <tbody id="modelRankingRows"></tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section shell" id="feature-progression">
+      <div class="section-heading compact">
+        <div>
+          <p class="eyebrow"><span></span> Feature progression</p>
+          <h2><span id="featureModelName">Lasso 迴歸</span>特徵數分析</h2>
+        </div>
+        <div class="section-actions">
+          <span class="active-model-chip" id="featureActiveChip">目前模型：Lasso</span>
+          <a class="text-button" href="linear_regression_feature_progression.png" download>下載 PNG 圖表 ↓</a>
+        </div>
+      </div>
+
+      <div class="chart-grid">
+        <article class="panel chart-panel model-linked-panel">
+          <div class="panel-heading">
+            <div><h3>不同特徵數的 RMSE</h3><p>每個特徵數皆以訓練集交叉驗證選出最佳組合。</p></div>
+            <span class="panel-tag" id="featureRmseBadge">Lasso</span>
+          </div>
+          <div id="featureRmseChart" class="chart" role="img" aria-label="不同特徵數的 RMSE 折線圖"></div>
+        </article>
+        <article class="panel chart-panel model-linked-panel">
+          <div class="panel-heading">
+            <div><h3>不同特徵數的 R²</h3><p>使用保留測試集評估每個最佳特徵組合。</p></div>
+            <span class="panel-tag mint" id="featureR2Badge">Lasso</span>
+          </div>
+          <div id="featureR2Chart" class="chart" role="img" aria-label="不同特徵數的 R2 折線圖"></div>
+        </article>
+      </div>
+
+      <article class="panel feature-table-panel model-linked-panel">
+        <div class="panel-heading">
+          <div><h3>特徵選擇明細</h3><p>表格與上方折線圖會跟著目前選擇的模型更新。</p></div>
+          <span class="live-badge"><i></i> 已連動</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>特徵數量</th><th>選定特徵</th><th>交叉驗證 RMSE</th><th>測試 RMSE</th><th>測試 R²</th></tr></thead>
+            <tbody id="featureProgressionRows"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <figure class="export-figure">
+        <img src="linear_regression_feature_progression.png?v=3" alt="Lasso 線性迴歸特徵數、RMSE、R2 與選定特徵比較圖">
+        <figcaption><span>PNG 匯出預覽</span>使用專案實際資料產生，可直接用於報告或簡報。</figcaption>
+      </figure>
+    </section>
+
+    <section class="section shell" id="diagnostics">
+      <div class="section-heading compact">
+        <div>
+          <p class="eyebrow"><span></span> Diagnostics</p>
+          <h2><span id="diagnosticModelName">Lasso 迴歸</span>預測與殘差診斷</h2>
+        </div>
+        <div class="chart-legend"><span><i class="dot actual"></i>實際利潤</span><span><i class="dot predicted"></i>預測利潤</span></div>
+      </div>
+
+      <div class="chart-grid">
+        <article class="panel chart-panel">
+          <div class="panel-heading">
+            <div><h3>實際值 vs. 預測值</h3><p>點越靠近對角線，代表預測越準確。</p></div>
+            <span class="panel-tag">10 筆測試資料</span>
+          </div>
+          <div id="scatterChart" class="chart" role="img" aria-label="實際利潤與預測利潤散佈圖"></div>
+        </article>
+        <article class="panel chart-panel">
+          <div class="panel-heading">
+            <div><h3>殘差分布</h3><p>正值為低估、負值為高估，越接近零越好。</p></div>
+            <span class="panel-tag mint">平均接近 0</span>
+          </div>
+          <div id="residualChart" class="chart" role="img" aria-label="測試資料殘差圖"></div>
+        </article>
+      </div>
+
+      <article class="equation-panel">
+        <div class="equation-label"><span>ƒ</span><div><strong>完整迴歸方程式</strong><small>州別以 California 為基準類別</small></div></div>
+        <div class="equation" id="equationText">Profit = 54,028.04 + 0.8056(R&amp;D) − 0.0688(Admin) + 0.0299(Marketing) + State</div>
+      </article>
+    </section>
+
+    <section class="section shell two-column" id="predictor">
+      <article class="panel coefficient-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow"><span></span> Explainability</p><h3 id="coefficientModelTitle">Lasso 迴歸特徵影響與係數</h3><p>係數表示其他條件不變時，該特徵每增加 1 元對預測利潤的影響。</p></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>特徵</th><th>係數</th><th>方向</th><th>相對影響</th></tr></thead>
+            <tbody id="coefficientRows"></tbody>
+          </table>
+        </div>
+        <div class="insight-callout">
+          <span>!</span>
+          <p><strong>主要洞察</strong>研發支出是最強的正向預測因子；行政支出在控制其他變數後呈現輕微負向關係。</p>
+        </div>
+      </article>
+
+      <article class="panel predictor-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow"><span></span> Live calculator</p><h3 id="liveModelTitle">Lasso 迴歸即時預測</h3><p>調整投入條件，立即查看目前所選模型的估計結果。</p></div>
+          <span class="live-badge"><i></i> 即時計算</span>
+        </div>
+
+        <form id="predictForm">
+          <label class="field">
+            <span><b>研發支出</b><output id="rdOutput">$100,000</output></span>
+            <input id="rdSpend" type="range" min="0" max="200000" step="1000" value="100000">
+            <small><span>$0</span><span>$200,000</span></small>
+          </label>
+          <label class="field">
+            <span><b>行政支出</b><output id="adminOutput">$120,000</output></span>
+            <input id="adminSpend" type="range" min="50000" max="200000" step="1000" value="120000">
+            <small><span>$50,000</span><span>$200,000</span></small>
+          </label>
+          <label class="field">
+            <span><b>行銷支出</b><output id="marketingOutput">$300,000</output></span>
+            <input id="marketingSpend" type="range" min="0" max="500000" step="1000" value="300000">
+            <small><span>$0</span><span>$500,000</span></small>
+          </label>
+          <label class="select-field">
+            <span>公司所在地</span>
+            <select id="stateSelect">
+              <option value="California">California</option>
+              <option value="Florida">Florida</option>
+              <option value="New York">New York</option>
+            </select>
+          </label>
+        </form>
+
+        <div class="prediction-box">
+          <div><small>預測年利潤</small><strong id="predictedProfit">$135,293</strong></div>
+          <span class="trend-pill">模型估計值</span>
+          <p id="predictionSummary">研發投入占此筆預測的主要正向貢獻。</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="section shell">
+      <article class="panel residual-table-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow"><span></span> Test set</p><h3>測試集預測明細</h3><p>依絕對誤差由大至小排列，快速定位模型最難預測的樣本。</p></div>
+          <button class="text-button" id="sortToggle" type="button">切換排序 ↕</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>樣本</th><th>州別</th><th>實際利潤</th><th>預測利潤</th><th>殘差</th><th>診斷</th></tr></thead>
+            <tbody id="residualRows"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="method-section" id="method">
+      <div class="shell">
+        <div class="section-heading inverse">
+          <div><p class="eyebrow"><span></span> CRISP-DM workflow</p><h2>從資料到決策的建模流程</h2></div>
+          <p>以可重現、可解釋為核心，將 Python 分析流程轉成可互動的決策介面。</p>
+        </div>
+        <div class="steps-grid">
+          <article><span>01</span><div class="step-icon">⌁</div><h3>資料理解</h3><p>檢查 50 筆資料、欄位型態與遺漏值。</p></article>
+          <article><span>02</span><div class="step-icon">◇</div><h3>資料準備</h3><p>州別 One-Hot Encoding，數值欄位保留原尺度。</p></article>
+          <article><span>03</span><div class="step-icon">∑</div><h3>模型訓練</h3><p>80% 訓練資料擬合多元線性迴歸模型。</p></article>
+          <article><span>04</span><div class="step-icon">◎</div><h3>模型評估</h3><p>以 MAE、RMSE、R² 與殘差檢查泛化能力。</p></article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer-inner">
+      <div><strong>新創獲利預測實驗室</strong><p>50 Startups × Multiple Linear Regression</p></div>
+      <p>以 HTML、CSS 與 JavaScript 建立 · <a href="https://github.com/HuangYuhsiang8810/AIoT_1014_DIC_50-Startups" target="_blank" rel="noreferrer">GitHub 專案 ↗</a></p>
+    </div>
+  </footer>
+
+  <script src="app.js?v=3"></script>
+</body>
+</html>

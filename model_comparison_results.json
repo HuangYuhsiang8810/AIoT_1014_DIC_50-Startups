@@ -1,0 +1,655 @@
+{
+  "dataset": {
+    "rows": 50,
+    "train_rows": 40,
+    "test_rows": 10,
+    "random_state": 42
+  },
+  "best_model_id": "lasso",
+  "models": [
+    {
+      "id": "lasso",
+      "name": "Lasso 迴歸",
+      "short_name": "Lasso",
+      "description": "加入 L1 正則化，可將較不重要的特徵係數壓縮為零。",
+      "mae": 6419.674682736126,
+      "mse": 63483468.46756562,
+      "rmse": 7967.651377135274,
+      "r2": 0.9216052236992501,
+      "new_company_prediction": 134859.83286144753,
+      "parameters": {
+        "alpha": 1336.7506999197064
+      },
+      "intercept": 49568.74296220395,
+      "coefficients": {
+        "State_Florida": 0.0,
+        "State_New York": -0.0,
+        "R&D Spend": 0.7700904643050775,
+        "Administration": -0.009384438527839462,
+        "Marketing Spend": 0.03136058697358851
+      },
+      "test_predictions": [
+        127063.38064703807,
+        83971.62427646639,
+        99082.80154434609,
+        49233.61233774804,
+        129963.54385038301,
+        49500.590087968754,
+        110430.04107117151,
+        102383.38020248554,
+        98631.90840484778,
+        114679.08613185846
+      ],
+      "residuals": [
+        7243.96935296194,
+        -2965.8642764663964,
+        854.7884556539066,
+        15692.467662251962,
+        -4593.173850383013,
+        -13827.18008796875,
+        -4696.501071171515,
+        5020.959797514457,
+        -1204.0684048477851,
+        8097.773868141536
+      ],
+      "rank": 1,
+      "feature_progression": [
+        {
+          "feature_count": 1,
+          "selected_features": [
+            "R&D Spend"
+          ],
+          "selected_feature_labels": [
+            "研發支出"
+          ],
+          "cv_rmse": 9429.60971214372,
+          "rmse": 7833.022996205864,
+          "r2": 0.9242320945684168
+        },
+        {
+          "feature_count": 2,
+          "selected_features": [
+            "R&D Spend",
+            "Marketing Spend"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行銷支出"
+          ],
+          "cv_rmse": 9171.599163316776,
+          "rmse": 7843.015672943536,
+          "r2": 0.9240386552992067
+        },
+        {
+          "feature_count": 3,
+          "selected_features": [
+            "R&D Spend",
+            "Administration",
+            "Marketing Spend"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出",
+            "行銷支出"
+          ],
+          "cv_rmse": 9187.214448510236,
+          "rmse": 7967.636985202084,
+          "r2": 0.9216055069072647
+        },
+        {
+          "feature_count": 4,
+          "selected_features": [
+            "R&D Spend",
+            "Marketing Spend",
+            "State_Florida",
+            "State_New York"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行銷支出",
+            "州別：Florida",
+            "州別：New York"
+          ],
+          "cv_rmse": 9220.643468051692,
+          "rmse": 7843.015672943536,
+          "r2": 0.9240386552992067
+        },
+        {
+          "feature_count": 5,
+          "selected_features": [
+            "R&D Spend",
+            "Administration",
+            "Marketing Spend",
+            "State_Florida",
+            "State_New York"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出",
+            "行銷支出",
+            "州別：Florida",
+            "州別：New York"
+          ],
+          "cv_rmse": 9237.082957450377,
+          "rmse": 7967.636985202084,
+          "r2": 0.9216055069072647
+        }
+      ]
+    },
+    {
+      "id": "huber",
+      "name": "Huber 穩健迴歸",
+      "short_name": "Huber",
+      "description": "降低離群值對模型的影響，適合含極端樣本的資料。",
+      "mae": 6873.346826759877,
+      "mse": 72770249.0351507,
+      "rmse": 8530.547991492147,
+      "r2": 0.9101371186519976,
+      "new_company_prediction": 136344.02275460266,
+      "parameters": {
+        "epsilon": 1.35
+      },
+      "intercept": 54014.20505805175,
+      "coefficients": {
+        "State_Florida": -1736.3706133296314,
+        "State_New York": -1151.4798855407846,
+        "R&D Spend": 0.7584944190831481,
+        "Administration": -0.03807236533329416,
+        "Marketing Spend": 0.03683019876077133
+      },
+      "test_predictions": [
+        127937.00125704826,
+        86546.55425660907,
+        98253.94616142976,
+        48964.71626951803,
+        129543.47413332917,
+        51303.882962079566,
+        108863.85496932502,
+        102830.0985299031,
+        98887.10420577046,
+        112566.9400416154
+      ],
+      "residuals": [
+        6370.348742951741,
+        -5540.794256609079,
+        1683.643838570235,
+        15961.363730481971,
+        -4173.10413332918,
+        -15630.472962079562,
+        -3130.3149693250307,
+        4574.241470096895,
+        -1459.2642057704652,
+        10209.919958384606
+      ],
+      "rank": 2,
+      "feature_progression": [
+        {
+          "feature_count": 1,
+          "selected_features": [
+            "R&D Spend"
+          ],
+          "selected_feature_labels": [
+            "研發支出"
+          ],
+          "cv_rmse": 9361.119081863977,
+          "rmse": 7986.526789701946,
+          "r2": 0.9212333483687266
+        },
+        {
+          "feature_count": 2,
+          "selected_features": [
+            "R&D Spend",
+            "Administration"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出"
+          ],
+          "cv_rmse": 9176.46209320886,
+          "rmse": 9293.106337464369,
+          "r2": 0.8933530862988212
+        },
+        {
+          "feature_count": 3,
+          "selected_features": [
+            "R&D Spend",
+            "Administration",
+            "Marketing Spend"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出",
+            "行銷支出"
+          ],
+          "cv_rmse": 9198.726875686092,
+          "rmse": 8585.859343362796,
+          "r2": 0.9089680140637818
+        },
+        {
+          "feature_count": 4,
+          "selected_features": [
+            "R&D Spend",
+            "Administration",
+            "Marketing Spend",
+            "State_Florida"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出",
+            "行銷支出",
+            "州別：Florida"
+          ],
+          "cv_rmse": 9445.63328511399,
+          "rmse": 8527.648004705512,
+          "r2": 0.9101982066085232
+        },
+        {
+          "feature_count": 5,
+          "selected_features": [
+            "R&D Spend",
+            "Administration",
+            "Marketing Spend",
+            "State_Florida",
+            "State_New York"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出",
+            "行銷支出",
+            "州別：Florida",
+            "州別：New York"
+          ],
+          "cv_rmse": 9906.62058044552,
+          "rmse": 8530.547991492147,
+          "r2": 0.9101371186519976
+        }
+      ]
+    },
+    {
+      "id": "linear",
+      "name": "一般線性迴歸",
+      "short_name": "Linear",
+      "description": "以最小平方法建立基準模型，沒有正則化懲罰。",
+      "mae": 6961.477813275563,
+      "mse": 82010363.04501382,
+      "rmse": 9055.957323497822,
+      "r2": 0.8987266414319834,
+      "new_company_prediction": 135293.1329687182,
+      "parameters": {},
+      "intercept": 54028.03959405879,
+      "coefficients": {
+        "State_Florida": 938.793006148455,
+        "State_New York": 6.987759966974305,
+        "R&D Spend": 0.8056300637169755,
+        "Administration": -0.06878788228041162,
+        "Marketing Spend": 0.029855442922037487
+      },
+      "test_predictions": [
+        126362.87908251511,
+        84608.45383643442,
+        99677.49425154639,
+        46357.46068582471,
+        128750.48288496584,
+        50912.417419045865,
+        109741.35032700337,
+        100643.24281644383,
+        97599.27574600169,
+        113097.42524436551
+      ],
+      "residuals": [
+        7944.470917484898,
+        -3602.693836434424,
+        260.09574845360476,
+        18568.61931417529,
+        -3380.1128849658417,
+        -15239.007419045862,
+        -4007.8103270033753,
+        6761.097183556165,
+        -171.43574600169086,
+        9679.434755634487
+      ],
+      "rank": 3,
+      "feature_progression": [
+        {
+          "feature_count": 1,
+          "selected_features": [
+            "R&D Spend"
+          ],
+          "selected_feature_labels": [
+            "研發支出"
+          ],
+          "cv_rmse": 9406.578720181322,
+          "rmse": 7714.334890830185,
+          "r2": 0.9265108109341951
+        },
+        {
+          "feature_count": 2,
+          "selected_features": [
+            "R&D Spend",
+            "Administration"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出"
+          ],
+          "cv_rmse": 9163.34536294893,
+          "rmse": 9152.27478235091,
+          "r2": 0.8965609365509307
+        },
+        {
+          "feature_count": 3,
+          "selected_features": [
+            "R&D Spend",
+            "Administration",
+            "Marketing Spend"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出",
+            "行銷支出"
+          ],
+          "cv_rmse": 9104.681197069258,
+          "rmse": 8995.905803361418,
+          "r2": 0.900065308303732
+        },
+        {
+          "feature_count": 4,
+          "selected_features": [
+            "R&D Spend",
+            "Administration",
+            "Marketing Spend",
+            "State_Florida"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出",
+            "行銷支出",
+            "州別：Florida"
+          ],
+          "cv_rmse": 9298.99517907619,
+          "rmse": 9055.957752262138,
+          "r2": 0.8987266318421849
+        },
+        {
+          "feature_count": 5,
+          "selected_features": [
+            "R&D Spend",
+            "Administration",
+            "Marketing Spend",
+            "State_Florida",
+            "State_New York"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出",
+            "行銷支出",
+            "州別：Florida",
+            "州別：New York"
+          ],
+          "cv_rmse": 9550.676105680102,
+          "rmse": 9055.957323497803,
+          "r2": 0.8987266414319839
+        }
+      ]
+    },
+    {
+      "id": "elastic_net",
+      "name": "Elastic Net 迴歸",
+      "short_name": "Elastic Net",
+      "description": "結合 L1 與 L2 正則化，兼顧特徵篩選與模型穩定性。",
+      "mae": 7049.26268943884,
+      "mse": 82407281.27869383,
+      "rmse": 9077.845629811834,
+      "r2": 0.8982364931006123,
+      "new_company_prediction": 135274.1780145583,
+      "parameters": {
+        "alpha": 0.057056157587810206,
+        "l1_ratio": 0.9
+      },
+      "intercept": 53513.64967077512,
+      "coefficients": {
+        "State_Florida": 871.5384269546697,
+        "State_New York": 36.94394972382554,
+        "R&D Spend": 0.794560881686729,
+        "Administration": -0.06398357628695495,
+        "Marketing Spend": 0.03327489776514962
+      },
+      "test_predictions": [
+        126345.14474438193,
+        84664.32630340847,
+        99276.81681965028,
+        46464.93482119311,
+        128881.51899691162,
+        50670.57356106489,
+        109476.72836403092,
+        100555.28047935832,
+        97161.39858715129,
+        112393.92487929256
+      ],
+      "residuals": [
+        7962.2052556180715,
+        -3658.566303408472,
+        660.7731803497154,
+        18461.145178806895,
+        -3511.148996911623,
+        -14997.163561064888,
+        -3743.1883640309243,
+        6849.0595206416765,
+        266.4414128487115,
+        10382.935120707436
+      ],
+      "rank": 4,
+      "feature_progression": [
+        {
+          "feature_count": 1,
+          "selected_features": [
+            "R&D Spend"
+          ],
+          "selected_feature_labels": [
+            "研發支出"
+          ],
+          "cv_rmse": 9395.281181156217,
+          "rmse": 7724.121581825669,
+          "r2": 0.9263242304429149
+        },
+        {
+          "feature_count": 2,
+          "selected_features": [
+            "R&D Spend",
+            "Administration"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出"
+          ],
+          "cv_rmse": 9151.462927887264,
+          "rmse": 9156.374763819635,
+          "r2": 0.8964682397633295
+        },
+        {
+          "feature_count": 3,
+          "selected_features": [
+            "R&D Spend",
+            "Administration",
+            "Marketing Spend"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出",
+            "行銷支出"
+          ],
+          "cv_rmse": 9121.073004967602,
+          "rmse": 9027.30482443013,
+          "r2": 0.899366473147635
+        },
+        {
+          "feature_count": 4,
+          "selected_features": [
+            "R&D Spend",
+            "Administration",
+            "Marketing Spend",
+            "State_Florida"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出",
+            "行銷支出",
+            "州別：Florida"
+          ],
+          "cv_rmse": 9314.116300247773,
+          "rmse": 9077.998607511388,
+          "r2": 0.8982330632827923
+        },
+        {
+          "feature_count": 5,
+          "selected_features": [
+            "R&D Spend",
+            "Administration",
+            "Marketing Spend",
+            "State_Florida",
+            "State_New York"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出",
+            "行銷支出",
+            "州別：Florida",
+            "州別：New York"
+          ],
+          "cv_rmse": 9565.09821753214,
+          "rmse": 9077.839426987619,
+          "r2": 0.8982366321690554
+        }
+      ]
+    },
+    {
+      "id": "ridge",
+      "name": "Ridge 迴歸",
+      "short_name": "Ridge",
+      "description": "加入 L2 正則化，降低係數波動並減少過度擬合。",
+      "mae": 7070.004564370256,
+      "mse": 82495110.50439742,
+      "rmse": 9082.681900429929,
+      "r2": 0.8981280341164404,
+      "new_company_prediction": 135270.20385752455,
+      "parameters": {
+        "alpha": 0.2682695795279725
+      },
+      "intercept": 53427.65801899716,
+      "coefficients": {
+        "State_Florida": 860.7420904564572,
+        "State_New York": 42.60403191431143,
+        "R&D Spend": 0.7926721257524659,
+        "Administration": -0.0631718505365081,
+        "Marketing Spend": 0.03385318442553928
+      },
+      "test_predictions": [
+        126341.49951602932,
+        84674.06549709808,
+        99209.50537460994,
+        46484.59329814307,
+        128903.57531619396,
+        50631.21943858748,
+        109432.1807793581,
+        100540.21380913709,
+        97087.18444497888,
+        112274.97894463678
+      ],
+      "residuals": [
+        7965.8504839706875,
+        -3668.3054970980884,
+        728.0846253900527,
+        18441.486701856935,
+        -3533.2053161939693,
+        -14957.80943858748,
+        -3698.640779358102,
+        6864.126190862909,
+        340.65555502111965,
+        10501.881055363221
+      ],
+      "rank": 5,
+      "feature_progression": [
+        {
+          "feature_count": 1,
+          "selected_features": [
+            "R&D Spend"
+          ],
+          "selected_feature_labels": [
+            "研發支出"
+          ],
+          "cv_rmse": 9392.037783271462,
+          "rmse": 7726.275153030841,
+          "r2": 0.9262831414639072
+        },
+        {
+          "feature_count": 2,
+          "selected_features": [
+            "R&D Spend",
+            "Administration"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出"
+          ],
+          "cv_rmse": 9147.991733403665,
+          "rmse": 9157.452876962028,
+          "r2": 0.8964438577288438
+        },
+        {
+          "feature_count": 3,
+          "selected_features": [
+            "R&D Spend",
+            "Administration",
+            "Marketing Spend"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出",
+            "行銷支出"
+          ],
+          "cv_rmse": 9132.979596900674,
+          "rmse": 9033.68001575513,
+          "r2": 0.8992242857422329
+        },
+        {
+          "feature_count": 4,
+          "selected_features": [
+            "R&D Spend",
+            "Administration",
+            "Marketing Spend",
+            "State_Florida"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出",
+            "行銷支出",
+            "州別：Florida"
+          ],
+          "cv_rmse": 9326.804257621206,
+          "rmse": 9082.895776997964,
+          "r2": 0.8981232363522534
+        },
+        {
+          "feature_count": 5,
+          "selected_features": [
+            "R&D Spend",
+            "Administration",
+            "Marketing Spend",
+            "State_Florida",
+            "State_New York"
+          ],
+          "selected_feature_labels": [
+            "研發支出",
+            "行政支出",
+            "行銷支出",
+            "州別：Florida",
+            "州別：New York"
+          ],
+          "cv_rmse": 9577.711609423633,
+          "rmse": 9082.681900429929,
+          "r2": 0.8981280341164404
+        }
+      ]
+    }
+  ]
+}

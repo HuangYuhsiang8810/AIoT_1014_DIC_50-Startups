@@ -1,0 +1,17 @@
+.venv/
+.tmp/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+Thumbs.db
+
+# Local editor settings
+.vscode/
+.idea/
+
+# Generated local preview files
+*.log
+
+# Local Sites deployment identity
+startup-profit-dashboard/.openai/
