@@ -6,6 +6,7 @@ import warnings
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy.stats import f as f_distribution
 
 from sklearn.base import clone
 from sklearn.compose import ColumnTransformer
@@ -161,6 +162,24 @@ def get_original_scale_equation(pipeline):
     }
 
 
+def get_subset_equation(pipeline, selected_features):
+    scaler = pipeline.named_steps["scaler"]
+    estimator = pipeline.named_steps["regressor"]
+    scaled_coefficients = np.asarray(estimator.coef_, dtype=float)
+    original_coefficients = scaled_coefficients / scaler.scale_
+    scaled_intercept = float(np.asarray(estimator.intercept_).reshape(-1)[0])
+    original_intercept = scaled_intercept - float(
+        np.sum(scaled_coefficients * scaler.mean_ / scaler.scale_)
+    )
+    return {
+        "intercept": original_intercept,
+        "coefficients": {
+            name: float(value)
+            for name, value in zip(selected_features, original_coefficients)
+        },
+    }
+
+
 def evaluate_feature_progression(
     features,
     target,
@@ -236,6 +255,29 @@ def evaluate_feature_progression(
                 )
                 final_model.fit(X_train[selected_features], y_train)
                 predictions = final_model.predict(X_test[selected_features])
+                residuals = y_test.to_numpy() - predictions
+                mse = float(mean_squared_error(y_test, predictions))
+                rmse = float(np.sqrt(mse))
+                mae = float(mean_absolute_error(y_test, predictions))
+                r2 = float(r2_score(y_test, predictions))
+                sample_count = len(y_test)
+                adjusted_r2 = 1 - (
+                    (1 - r2)
+                    * (sample_count - 1)
+                    / (sample_count - feature_count - 1)
+                )
+                f_statistic = (
+                    (r2 / feature_count)
+                    / ((1 - r2) / (sample_count - feature_count - 1))
+                )
+                f_pvalue = float(
+                    f_distribution.sf(
+                        f_statistic,
+                        feature_count,
+                        sample_count - feature_count - 1,
+                    )
+                )
+                equation = get_subset_equation(final_model, selected_features)
                 progression.append(
                     {
                         "feature_count": feature_count,
@@ -244,8 +286,17 @@ def evaluate_feature_progression(
                             FEATURE_LABELS[name] for name in selected_features
                         ],
                         "cv_rmse": best_cv_rmse,
-                        "rmse": float(np.sqrt(mean_squared_error(y_test, predictions))),
-                        "r2": float(r2_score(y_test, predictions)),
+                        "mae": mae,
+                        "mse": mse,
+                        "rmse": rmse,
+                        "r2": r2,
+                        "adjusted_r2": float(adjusted_r2),
+                        "f_statistic": float(f_statistic),
+                        "f_pvalue": f_pvalue,
+                        "intercept": equation["intercept"],
+                        "coefficients": equation["coefficients"],
+                        "test_predictions": [float(value) for value in predictions],
+                        "residuals": [float(value) for value in residuals],
                     }
                 )
 
@@ -406,6 +457,10 @@ def evaluate_models():
     )
     for result in output["models"]:
         result["feature_progression"] = feature_progression[result["id"]]
+        result["best_feature_count"] = min(
+            result["feature_progression"],
+            key=lambda item: item["rmse"],
+        )["feature_count"]
     return output
 
 

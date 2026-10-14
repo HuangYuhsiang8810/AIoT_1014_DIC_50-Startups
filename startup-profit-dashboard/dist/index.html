@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="以 50 Startups 資料集建立的多元線性迴歸互動分析儀表板。">
   <title>新創獲利預測實驗室</title>
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=4">
 </head>
 <body>
   <header class="site-header">
@@ -150,6 +150,44 @@
         </div>
       </div>
 
+      <div class="k-selector-panel">
+        <div class="k-selector-label"><span>☷</span> 選擇特徵數量（K = 1～5）</div>
+        <div class="k-selector-buttons" id="kSelectorButtons" aria-label="選擇特徵數量"></div>
+      </div>
+
+      <div class="k-metrics-grid">
+        <article class="metric-card k-metric-card metric-featured">
+          <div class="metric-top"><span>測試集 RMSE</span><span class="metric-badge good" id="kOptimalBadge">最佳特徵數</span></div>
+          <strong id="kMetricRMSE">$7,833</strong>
+          <p>越低代表模型預測誤差越小</p>
+        </article>
+        <article class="metric-card k-metric-card">
+          <div class="metric-top"><span>R² 分數</span><span class="metric-icon">R²</span></div>
+          <strong id="kMetricR2">0.9242</strong>
+          <p id="kMetricR2Note">解釋 92.42% 的獲利變異</p>
+        </article>
+        <article class="metric-card k-metric-card">
+          <div class="metric-top"><span>調整後 R²</span><span class="metric-icon">R̄²</span></div>
+          <strong id="kMetricAdjustedR2">0.9147</strong>
+          <p>針對特徵數量進行複雜度懲罰</p>
+        </article>
+        <article class="metric-card k-metric-card">
+          <div class="metric-top"><span>平均絕對誤差</span><span class="metric-icon">±</span></div>
+          <strong id="kMetricMAE">$6,000</strong>
+          <p>平均每筆預測的絕對差距</p>
+        </article>
+        <article class="metric-card k-metric-card">
+          <div class="metric-top"><span>F-statistic</span><span class="metric-badge good" id="kMetricPValue">p &lt; 0.0001</span></div>
+          <strong id="kMetricFStat">97.6</strong>
+          <p>檢查整體迴歸模型顯著性</p>
+        </article>
+      </div>
+
+      <div class="active-predictors-bar">
+        <div><strong>✓ 有效預測特徵（<span id="activePredictorCount">1</span>）</strong><span class="predictor-chips" id="activePredictorChips"></span></div>
+        <p id="kSelectionInsight">目前模型的最佳特徵數為 K=1。</p>
+      </div>
+
       <div class="chart-grid">
         <article class="panel chart-panel model-linked-panel">
           <div class="panel-heading">
@@ -181,7 +219,7 @@
       </article>
 
       <figure class="export-figure">
-        <img src="linear_regression_feature_progression.png?v=3" alt="Lasso 線性迴歸特徵數、RMSE、R2 與選定特徵比較圖">
+        <img src="linear_regression_feature_progression.png?v=4" alt="Lasso 線性迴歸特徵數、RMSE、R2 與選定特徵比較圖">
         <figcaption><span>PNG 匯出預覽</span>使用專案實際資料產生，可直接用於報告或簡報。</figcaption>
       </figure>
     </section>
@@ -313,6 +351,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>

@@ -29,6 +29,7 @@ const currency = new Intl.NumberFormat("zh-TW", {
 
 let modelComparison = null;
 let activeRegressionModel = null;
+let activeFeatureStage = null;
 
 function svgElement(name, attributes = {}, text = "") {
   const element = document.createElementNS("http://www.w3.org/2000/svg", name);
@@ -108,7 +109,7 @@ function drawResidualChart() {
   svg.append(svgElement("text", { x: 298, y: 304, "text-anchor": "middle" }, "測試樣本"));
 }
 
-function drawFeatureLineChart(containerSelector, progression, valueKey, valueFormatter) {
+function drawFeatureLineChart(containerSelector, progression, valueKey, valueFormatter, selectedFeatureCount) {
   const svg = createChartRoot(document.querySelector(containerSelector));
   const plot = { left: 65, right: 535, top: 24, bottom: 260 };
   const values = progression.map(item => item[valueKey]);
@@ -142,7 +143,7 @@ function drawFeatureLineChart(containerSelector, progression, valueKey, valueFor
       cx: x(item.feature_count),
       cy: y(item[valueKey]),
       r: 5,
-      class: "line-point"
+      class: `line-point ${item.feature_count === selectedFeatureCount ? "selected" : ""}`
     });
     point.append(svgElement("title", {}, `${item.feature_count} 個特徵\n${valueFormatter(item[valueKey])}\n${item.selected_feature_labels.join("、")}`));
     svg.append(point);
@@ -156,10 +157,76 @@ function renderFeatureProgression(activeModel) {
   document.querySelector("#featureActiveChip").textContent = `目前模型：${activeModel.short_name}`;
   document.querySelector("#featureRmseBadge").textContent = activeModel.short_name;
   document.querySelector("#featureR2Badge").textContent = activeModel.short_name;
-  drawFeatureLineChart("#featureRmseChart", progression, "rmse", value => Math.round(value).toLocaleString("zh-TW"));
-  drawFeatureLineChart("#featureR2Chart", progression, "r2", value => value.toFixed(4));
-  document.querySelector("#featureProgressionRows").innerHTML = progression.map(item => `
-    <tr>
+
+  document.querySelector("#kSelectorButtons").innerHTML = progression.map(item => {
+    const isOptimal = item.feature_count === activeModel.best_feature_count;
+    const isFullModel = item.feature_count === progression.length;
+    return `
+      <button class="k-button ${isOptimal ? "optimal" : ""} ${isFullModel ? "warning" : ""}" type="button" data-feature-count="${item.feature_count}" aria-pressed="false">
+        <strong>K = ${item.feature_count}${isOptimal ? '<span class="k-star">★ 最佳</span>' : ""}${isFullModel ? " △ 完整模型" : ""}</strong>
+        <small>${item.selected_feature_labels.join(" + ")}</small>
+      </button>
+    `;
+  }).join("");
+
+  document.querySelectorAll("[data-feature-count]").forEach(button => {
+    button.onclick = () => {
+      const selectedStage = progression.find(
+        item => item.feature_count === Number(button.dataset.featureCount)
+      );
+      if (selectedStage) applyFeatureStage(selectedStage);
+    };
+  });
+
+  const defaultStage = progression.find(
+    item => item.feature_count === activeModel.best_feature_count
+  );
+  applyFeatureStage(defaultStage);
+}
+
+function applyFeatureStage(stage) {
+  activeFeatureStage = stage;
+  const isOptimal = stage.feature_count === activeRegressionModel.best_feature_count;
+  document.querySelectorAll("[data-feature-count]").forEach(button => {
+    const isSelected = Number(button.dataset.featureCount) === stage.feature_count;
+    button.classList.toggle("active", isSelected);
+    button.setAttribute("aria-pressed", isSelected ? "true" : "false");
+  });
+
+  document.querySelector("#kMetricRMSE").textContent = currency.format(stage.rmse);
+  document.querySelector("#kMetricR2").textContent = stage.r2.toFixed(4);
+  document.querySelector("#kMetricR2Note").textContent = `解釋 ${(stage.r2 * 100).toFixed(2)}% 的獲利變異`;
+  document.querySelector("#kMetricAdjustedR2").textContent = stage.adjusted_r2.toFixed(4);
+  document.querySelector("#kMetricMAE").textContent = currency.format(stage.mae);
+  document.querySelector("#kMetricFStat").textContent = stage.f_statistic.toFixed(1);
+  document.querySelector("#kMetricPValue").textContent = stage.f_pvalue < 0.0001
+    ? "p < 0.0001"
+    : `p = ${stage.f_pvalue.toFixed(4)}`;
+  document.querySelector("#kOptimalBadge").textContent = isOptimal ? "★ 最佳特徵數" : `K=${activeRegressionModel.best_feature_count} 最佳`;
+  document.querySelector("#activePredictorCount").textContent = stage.feature_count;
+  document.querySelector("#activePredictorChips").innerHTML = stage.selected_feature_labels
+    .map(label => `<span class="predictor-chip">${label}</span>`)
+    .join("");
+  document.querySelector("#kSelectionInsight").textContent = isOptimal
+    ? `★ ${activeRegressionModel.short_name} 在 K=${stage.feature_count} 達到最低測試 RMSE（${currency.format(stage.rmse)}）。`
+    : `目前 K=${stage.feature_count}；最佳為 K=${activeRegressionModel.best_feature_count}。`;
+
+  drawFeatureLineChart(
+    "#featureRmseChart",
+    activeRegressionModel.feature_progression,
+    "rmse",
+    value => Math.round(value).toLocaleString("zh-TW"),
+    stage.feature_count
+  );
+  drawFeatureLineChart(
+    "#featureR2Chart",
+    activeRegressionModel.feature_progression,
+    "r2",
+    value => value.toFixed(4),
+    stage.feature_count
+  );
+  document.querySelector("#featureProgressionRows").innerHTML = activeRegressionModel.feature_progression.map(item => `
+    <tr class="${item.feature_count === stage.feature_count ? "selected" : ""}">
       <td><strong>${item.feature_count}</strong></td>
       <td>${item.selected_feature_labels.join("、")}</td>
       <td>${currency.format(item.cv_rmse)}</td>
@@ -167,16 +234,51 @@ function renderFeatureProgression(activeModel) {
       <td>${item.r2.toFixed(4)}</td>
     </tr>
   `).join("");
+
+  model.intercept = stage.intercept;
+  model.coefficients = {
+    florida: stage.coefficients.State_Florida ?? 0,
+    newYork: stage.coefficients["State_New York"] ?? 0,
+    rd: stage.coefficients["R&D Spend"] ?? 0,
+    administration: stage.coefficients.Administration ?? 0,
+    marketing: stage.coefficients["Marketing Spend"] ?? 0
+  };
+  model.testRows.forEach((row, index) => {
+    row.predicted = stage.test_predictions[index];
+  });
+
+  document.querySelector("#equationText").textContent = equationFor(stage);
+  document.querySelector("#liveModelTitle").textContent = `${activeRegressionModel.name} K=${stage.feature_count} 即時預測`;
+  document.querySelector("#diagnosticModelName").textContent = `${activeRegressionModel.name} K=${stage.feature_count}：`;
+  document.querySelector("#coefficientModelTitle").textContent = `${activeRegressionModel.name} K=${stage.feature_count} 特徵係數`;
+  drawScatterChart();
+  drawResidualChart();
+  renderCoefficients();
+  renderResidualTable();
+  calculatePrediction();
 }
 
 function renderCoefficients() {
-  const rows = [
-    { label: "研發支出", value: model.coefficients.rd, impact: 100 },
-    { label: "行政支出", value: model.coefficients.administration, impact: 9 },
-    { label: "行銷支出", value: model.coefficients.marketing, impact: 4 },
-    { label: "州別：Florida", value: model.coefficients.florida, impact: 18 },
-    { label: "州別：New York", value: model.coefficients.newYork, impact: 2 }
-  ];
+  const featureLabels = {
+    "R&D Spend": "研發支出",
+    Administration: "行政支出",
+    "Marketing Spend": "行銷支出",
+    State_Florida: "州別：Florida",
+    "State_New York": "州別：New York"
+  };
+  const sourceCoefficients = activeFeatureStage?.coefficients ?? {
+    "R&D Spend": model.coefficients.rd,
+    Administration: model.coefficients.administration,
+    "Marketing Spend": model.coefficients.marketing,
+    State_Florida: model.coefficients.florida,
+    "State_New York": model.coefficients.newYork
+  };
+  const maxCoefficient = Math.max(...Object.values(sourceCoefficients).map(value => Math.abs(value)), 1);
+  const rows = Object.entries(sourceCoefficients).map(([feature, value]) => ({
+    label: featureLabels[feature] ?? feature,
+    value,
+    impact: Math.max(3, (Math.abs(value) / maxCoefficient) * 100)
+  }));
   document.querySelector("#coefficientRows").innerHTML = rows.map(row => `
     <tr>
       <td><strong>${row.label}</strong></td>
@@ -190,27 +292,21 @@ function renderCoefficients() {
 function equationFor(activeModel) {
   const coefficients = activeModel.coefficients;
   const signed = value => value >= 0 ? `+ ${Math.abs(value).toFixed(4)}` : `− ${Math.abs(value).toFixed(4)}`;
-  return `Profit = ${activeModel.intercept.toLocaleString("zh-TW", { maximumFractionDigits: 2 })} `
-    + `${signed(coefficients["R&D Spend"])}(R&D) `
-    + `${signed(coefficients.Administration)}(Admin) `
-    + `${signed(coefficients["Marketing Spend"])}(Marketing) `
-    + `${signed(coefficients.State_Florida)}(Florida) `
-    + `${signed(coefficients["State_New York"])}(New York)`;
+  const featureNames = {
+    "R&D Spend": "R&D",
+    Administration: "Admin",
+    "Marketing Spend": "Marketing",
+    State_Florida: "Florida",
+    "State_New York": "New York"
+  };
+  const terms = Object.entries(coefficients)
+    .map(([feature, value]) => `${signed(value)}(${featureNames[feature] ?? feature})`)
+    .join(" ");
+  return `Profit = ${activeModel.intercept.toLocaleString("zh-TW", { maximumFractionDigits: 2 })} ${terms}`;
 }
 
 function applyActiveModel(activeModel) {
   activeRegressionModel = activeModel;
-  model.intercept = activeModel.intercept;
-  model.coefficients = {
-    florida: activeModel.coefficients.State_Florida,
-    newYork: activeModel.coefficients["State_New York"],
-    rd: activeModel.coefficients["R&D Spend"],
-    administration: activeModel.coefficients.Administration,
-    marketing: activeModel.coefficients["Marketing Spend"]
-  };
-  model.testRows.forEach((row, index) => {
-    row.predicted = activeModel.test_predictions[index];
-  });
 
   document.querySelectorAll(".model-tab").forEach(button => {
     button.classList.toggle("active", button.dataset.modelId === activeModel.id);
@@ -224,21 +320,12 @@ function applyActiveModel(activeModel) {
   document.querySelector("#metricMAE").textContent = currency.format(activeModel.mae);
   document.querySelector("#metricRMSE").textContent = currency.format(activeModel.rmse);
   document.querySelector("#metricPrediction").textContent = currency.format(activeModel.new_company_prediction);
-  document.querySelector("#equationText").textContent = equationFor(activeModel);
-  document.querySelector("#liveModelTitle").textContent = `${activeModel.name}即時預測`;
-  document.querySelector("#diagnosticModelName").textContent = `${activeModel.name}：`;
-  document.querySelector("#coefficientModelTitle").textContent = `${activeModel.name}特徵影響與係數`;
   document.querySelectorAll("[data-model-id]").forEach(element => {
     const isSelected = element.dataset.modelId === activeModel.id;
     if (element.matches(".comparison-bar-row, tr")) element.classList.toggle("selected", isSelected);
   });
 
-  drawScatterChart();
-  drawResidualChart();
   renderFeatureProgression(activeModel);
-  renderCoefficients();
-  renderResidualTable();
-  calculatePrediction();
 }
 
 function renderModelComparison() {
