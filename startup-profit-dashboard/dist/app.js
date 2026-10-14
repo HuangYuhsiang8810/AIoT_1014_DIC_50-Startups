@@ -122,6 +122,17 @@ function drawFeatureLineChart(containerSelector, progression, valueKey, valueFor
   const max = rawMax + padding;
   const x = count => plot.left + ((count - 1) / 4) * (plot.right - plot.left);
   const y = value => plot.bottom - ((value - min) / (max - min)) * (plot.bottom - plot.top);
+  const selectedStage = progression.find(item => item.feature_count === selectedFeatureCount);
+  const selectedX = x(selectedFeatureCount);
+
+  svg.append(svgElement("rect", {
+    x: Math.max(plot.left, selectedX - 38),
+    y: plot.top,
+    width: Math.min(76, plot.right - Math.max(plot.left, selectedX - 38)),
+    height: plot.bottom - plot.top,
+    rx: 12,
+    class: "selection-band"
+  }));
 
   for (let tickIndex = 0; tickIndex < 5; tickIndex += 1) {
     const value = min + ((max - min) / 4) * tickIndex;
@@ -136,6 +147,13 @@ function drawFeatureLineChart(containerSelector, progression, valueKey, valueFor
   });
   svg.append(svgElement("line", { x1: plot.left, x2: plot.right, y1: plot.bottom, y2: plot.bottom, class: "axis" }));
   svg.append(svgElement("line", { x1: plot.left, x2: plot.left, y1: plot.top, y2: plot.bottom, class: "axis" }));
+  svg.append(svgElement("line", {
+    x1: selectedX,
+    x2: selectedX,
+    y1: plot.top,
+    y2: plot.bottom,
+    class: "selection-guide"
+  }));
 
   const points = progression.map(item => `${x(item.feature_count)},${y(item[valueKey])}`).join(" ");
   svg.append(svgElement("polyline", { points, class: "line-series" }));
@@ -143,12 +161,34 @@ function drawFeatureLineChart(containerSelector, progression, valueKey, valueFor
     const point = svgElement("circle", {
       cx: x(item.feature_count),
       cy: y(item[valueKey]),
-      r: 5,
+      r: item.feature_count === selectedFeatureCount ? 8 : 5,
       class: `line-point ${item.feature_count === selectedFeatureCount ? "selected" : ""}`
     });
     point.append(svgElement("title", {}, `${item.feature_count} 個特徵\n${valueFormatter(item[valueKey])}\n${item.selected_feature_labels.join("、")}`));
     svg.append(point);
   });
+  if (selectedStage) {
+    const labelWidth = 104;
+    const labelX = Math.min(
+      Math.max(selectedX - labelWidth / 2, plot.left),
+      plot.right - labelWidth
+    );
+    const labelY = Math.max(plot.top + 8, y(selectedStage[valueKey]) - 43);
+    svg.append(svgElement("rect", {
+      x: labelX,
+      y: labelY,
+      width: labelWidth,
+      height: 26,
+      rx: 8,
+      class: "selection-label-bg"
+    }));
+    svg.append(svgElement("text", {
+      x: labelX + labelWidth / 2,
+      y: labelY + 17,
+      "text-anchor": "middle",
+      class: "selection-label-text"
+    }, `K=${selectedFeatureCount} · ${valueFormatter(selectedStage[valueKey])}`));
+  }
   svg.append(svgElement("text", { x: 300, y: 304, "text-anchor": "middle" }, "特徵數量"));
 }
 
@@ -215,6 +255,8 @@ function applyFeatureStage(stage) {
   document.querySelector("#kSelectionInsight").textContent = isOptimal
     ? `★ ${activeRegressionModel.short_name} 在 K=${stage.feature_count} 達到最低測試 RMSE（${currency.format(stage.rmse)}）。`
     : `目前 K=${stage.feature_count}；最佳為 K=${activeRegressionModel.best_feature_count}。`;
+  document.querySelector("#featureRmseBadge").textContent = `${activeRegressionModel.short_name} · K=${stage.feature_count}`;
+  document.querySelector("#featureR2Badge").textContent = `${activeRegressionModel.short_name} · K=${stage.feature_count}`;
 
   document.querySelector("#metricR2").textContent = stage.r2.toFixed(4);
   document.querySelector("#metricR2Note").textContent = `K=${stage.feature_count} 可解釋約 ${(stage.r2 * 100).toFixed(2)}% 的獲利變異`;

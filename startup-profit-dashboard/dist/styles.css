@@ -172,9 +172,13 @@ code { padding: 2px 7px; border-radius: 6px; color: var(--navy); background: rgb
 .model-linked-panel { position: relative; overflow: hidden; }
 .model-linked-panel::before { position: absolute; inset: 0 auto 0 0; width: 3px; content: ""; background: var(--lime-dark); }
 .feature-table-panel { margin-top: 16px; padding: 24px; }
-.chart .line-series { fill: none; stroke: var(--navy-soft); stroke-width: 2.5; }
-.chart .line-point { fill: var(--lime-dark); stroke: white; stroke-width: 2.5; }
-.chart .line-point.selected { fill: var(--orange); stroke: white; stroke-width: 3; }
+.chart .selection-band { fill: rgba(255,156,98,.085); animation: bandIn .3s ease-out; }
+.chart .selection-guide { stroke: var(--orange); stroke-width: 1.5; stroke-dasharray: 5 5; opacity: .85; animation: guideIn .35s ease-out; }
+.chart .line-series { fill: none; stroke: var(--navy-soft); stroke-width: 2.5; stroke-dasharray: 1200; stroke-dashoffset: 1200; animation: chartDraw .55s ease-out forwards; }
+.chart .line-point { fill: var(--lime-dark); stroke: white; stroke-width: 2.5; transition: r .2s ease; }
+.chart .line-point.selected { fill: var(--orange); stroke: white; stroke-width: 3; filter: drop-shadow(0 0 5px rgba(255,156,98,.8)); animation: pointPulse 1.15s ease-in-out infinite alternate; }
+.chart .selection-label-bg { fill: var(--navy); filter: drop-shadow(0 4px 8px rgba(16,47,50,.2)); animation: labelIn .3s ease-out; }
+.chart .selection-label-text { fill: white; font-size: 10px; font-weight: 800; animation: labelIn .3s ease-out; }
 .feature-table-panel tr.selected { background: #f3f9e7; }
 .export-figure { margin: 16px 0 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--panel); box-shadow: var(--shadow); }
 .export-figure img { width: 100%; display: block; background: white; }
@@ -314,4 +318,16 @@ footer { border-top: 1px solid #d9ddd8; background: #ebece7; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; }
+  .chart .line-series,
+  .chart .line-point.selected,
+  .chart .selection-band,
+  .chart .selection-guide,
+  .chart .selection-label-bg,
+  .chart .selection-label-text { animation: none !important; }
 }
+
+@keyframes chartDraw { to { stroke-dashoffset: 0; } }
+@keyframes pointPulse { from { filter: drop-shadow(0 0 2px rgba(255,156,98,.55)); } to { filter: drop-shadow(0 0 9px rgba(255,156,98,.95)); } }
+@keyframes bandIn { from { opacity: 0; transform: scaleY(.7); transform-origin: center; } to { opacity: 1; transform: scaleY(1); } }
+@keyframes guideIn { from { opacity: 0; } to { opacity: .85; } }
+@keyframes labelIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
